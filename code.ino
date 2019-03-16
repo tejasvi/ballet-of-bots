@@ -1,7 +1,7 @@
 ///Libraries///
 #include <PID_v1.h>
 #include <stdint.h>
-#include "TouchScreen.h"
+// #include "TouchScreen.h"
 //#include <SPI.h>
 #include <Wire.h>
 //#include <wiinunchuk.h>
@@ -18,8 +18,34 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 int buttonPushCounter = 1; // counter for the number of button presses
 int lastButtonState = 0;   // previous state of the button */
 // int flag, flagZ;
-
+bool touch;
 float x, y;
+void getxy()
+{   
+    int serial[18];
+    for(int i=0;i<9;i++)
+    {
+    int num=Serial.read();
+    serial[i]=num;
+    }
+    for(int i=9;i<18;i++)
+    {
+        serial[i]=serial[i-9];
+    }
+    for(int i=0; i<18;i++)
+    {   
+        if(i>5)
+            if(serial[i]==255)
+                if(serial[i+1]==255)
+                    if(serial[i+2]==255)
+                        {
+                            x=serial[i-5]*255+serial[i-4];
+                            y=serial[i-3]*255+serial[i-2];
+                            touch=serial[i-1];
+                        }
+    
+    }
+}
 // int cCount = 0;
 // int flagC = 0;
 // int flagK = 0;
@@ -39,12 +65,12 @@ double Setpoint1, Input1, Output1; //for Y
 // servos variables
 Servo servo1; //X axis
 Servo servo2; //Y axis
-
+/* 
 uint16_t homeX = 550; // raw data value for center of touchscreen
-uint16_t homeY = 550; // raw data value for center of touchscreen
+uint16_t homeY = 550; // raw data value for center of touchscreen */
 
-float convertX = 151.0 / 955.0; // converts raw x values to mm. found through manual calibration
-float convertY = 91.0 / 927.0;  // converts raw y values to mm. found through manual calibration
+float convertX = 15.408 / 790.0; // converts raw x values to mm. found through manual calibration
+float convertY = 8.592 / 470.0;  // converts raw y values to mm. found through manual calibration
 
 /////TIME SAMPLE
 int Ts = 50;
@@ -66,8 +92,9 @@ PID myPID1(&Input1, &Output1, &Setpoint1, Kp1, Ki1, Kd1, DIRECT);
 
 void setup()
 {
-    servo1.attach(5);
-    servo2.attach(6);
+    pinMode(0, INPUT)
+    servo1.attach(3);
+    servo2.attach(4);
     Output = 90;
     Output1 = 0;
     servo1.write(Output);
@@ -87,12 +114,12 @@ void setup()
     Serial.begin(115200);
 
     //INIT OF TOUSCHSCREEN
-    TSPoint p = ts.getPoint(); //Find alternative
+    getxy();
     Input = 120;
     Input1 = 65;
     //INIT SETPOINT
-    Setpoint = 120;
-    Setpoint1 = 65;
+    Setpoint = 395;
+    Setpoint1 = 235;
     //// Make plate flat
     /*  servo1.attach(5);
     servo2.attach(6);
@@ -103,9 +130,9 @@ void setup()
 
     //Zapnutie PID
     myPID.SetMode(AUTOMATIC);
-    myPID.SetOutputLimits(45, 135);
+    myPID.SetOutputLimits(80, 100);
     myPID1.SetMode(AUTOMATIC);
-    myPID1.SetOutputLimits(-45, 45);
+    myPID1.SetOutputLimits(-10, 10);
     // TIME SAMPLE
     myPID1.SetSampleTime(Ts);
     myPID.SetSampleTime(Ts);
@@ -118,14 +145,14 @@ void loop()
     while (Stable < 125) //REGULATION LOOP
     {
         int oldx = x, oldy = y;
-        TSPoint p = ts.getPoint();      //measure pressure on plate
+        getxy();      
         if ((x != oldx) || (y != oldy)) //ball is on plate
         {
             servo1.attach(5); //connect servos
             servo2.attach(6);
             setDesiredPosition();
             noTouchCount = 0;
-            TSPoint p = ts.getPoint(); // measure actual position
+            getxy() // measure actual position
             Input = (x * convertX);    // read and convert X coordinate
             Input1 = (y * convertY);   // read and convert Y coordinate
 
@@ -178,7 +205,7 @@ void loop()
     while (Stable == 125) //if is stable
     {                     //still measure actual postiion
         setDesiredPosition();
-        TSPoint p = ts.getPoint();                                                                            //alternative
+        getxy();                                                                            //alternative
         Input = (x * convertX);                                                                               //read X
         Input1 = (y * convertY);                                                                              //read Y
         if (Input < Setpoint - 2 || Input > Setpoint + 2 || Input1 > Setpoint1 + 2 || Input1 < Setpoint1 - 2) //if ball isnt close to setpoint
@@ -240,28 +267,28 @@ void setDesiredPosition()
 
     switch (MODE)
     {
+    case 0:
+        Setpoint = 395;
+        Setpoint1 = 235;
+        break;
     case 1:
         Setpoint = 85 + (50 * cos(k)) / (1 + sin(k) * sin(k));
         Setpoint1 = 55 + (50 * sin(k) * cos(k)) / (1 + sin(k) * sin(k));
-        buttonPushCounter = 0;
         k = k + 0.008;
         break;
     case 2:
         Setpoint = 85 + 25 * cos(k);
         Setpoint1 = 55 + 25 * sin(k);
-        buttonPushCounter = 0;
         k = k - 0.02;
         break;
     case 3:
         Setpoint = 85 + 40 * cos(k);
         Setpoint1 = 55 + 25 * sin(k);
-        buttonPushCounter = 0;
         k = k - 0.02;
         break;
     case 4:
         Setpoint = 85 + 18 * cos(k) + 12 * cos(k * 150);  //
         Setpoint1 = 55 + 18 * sin(k) - 12 * sin(k * 150); //
-        buttonPushCounter = 0;
         k = k + 0.01;
     }
 }
