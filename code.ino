@@ -74,7 +74,7 @@ float convertX = 15.408 / 790.0; // converts raw x values to mm. found through m
 float convertY = 8.592 / 470.0;  // converts raw y values to mm. found through manual calibration
 
 /////TIME SAMPLE
-int Ts = 50;
+int Ts = 0;
 unsigned long Stable = 0;
 
 //PID const
@@ -94,10 +94,10 @@ PID myPID1(&Input1, &Output1, &Setpoint1, Kp1, Ki1, Kd1, DIRECT);
 void setup()
 {
   pinMode(0, INPUT);
-  servo1.attach(3);
-  servo2.attach(4);
-  Output = 90;
-  Output1 = 0;
+  servo1.attach(5);
+  servo2.attach(6);
+  Output = 60;
+  Output1 = 4;
   servo1.write(Output);
   servo2.write(Output1);
 
@@ -116,11 +116,11 @@ void setup()
 
   //INIT OF TOUSCHSCREEN
   getxy();
-  Input = 120;
-  Input1 = 65;
+  Input = 10;
+  Input1 = 3;
   //INIT SETPOINT
-  Setpoint = 395;
-  Setpoint1 = 235;
+  Setpoint = 7.7;
+  Setpoint1 = 4.3;
   //// Make plate flat
   /*  servo1.attach(5);
     servo2.attach(6);
@@ -147,7 +147,7 @@ void loop()
   {
     int oldx = x, oldy = y;
     getxy();
-    if ((x != oldx) || (y != oldy)) //ball is on plate
+    // if ((x != oldx) || (y != oldy)) //ball is on plate
     {
       servo1.attach(5); //connect servos
       servo2.attach(6);
@@ -177,7 +177,7 @@ void loop()
       {
         noTouchCount++;
         Output = 90; //make plate flat
-        Output = 0;
+        Output = 9;
         servo1.write(Output);
         servo2.write(Output1);
       }
@@ -199,8 +199,8 @@ void loop()
 
   } ////END OF REGULATION LOOP///
 
-  servo1.detach(); //detach servos
-  servo2.detach();
+/*   servo1.detach(); //detach servos
+  servo2.detach(); */
 
   ///control STABILITY////
   while (Stable == 125) //if is stable
@@ -269,8 +269,8 @@ void setDesiredPosition()
   switch (MODE)
   {
     case 0:
-      Setpoint = 395;
-      Setpoint1 = 235;
+      Setpoint = 7.7;
+      Setpoint1 = 4.3;
       break;
     case 1:
       Setpoint = 85 + (50 * cos(k)) / (1 + sin(k) * sin(k));
