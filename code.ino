@@ -70,8 +70,8 @@ Servo servo2; //Y axis
   uint16_t homeX = 550; // raw data value for center of touchscreen
   uint16_t homeY = 550; // raw data value for center of touchscreen */
 
-float convertX = 15.408 / 790.0; // converts raw x values to mm. found through manual calibration
-float convertY = 8.592 / 470.0;  // converts raw y values to mm. found through manual calibration
+float convertX = 154.08 / 790.0; // converts raw x values to mm. found through manual calibration
+float convertY = 85.92 / 470.0;  // converts raw y values to mm. found through manual calibration
 
 /////TIME SAMPLE
 int Ts = 0;
@@ -131,9 +131,9 @@ void setup()
 
   //Zapnutie PID
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(80, 100);
+  myPID.SetOutputLimits(10, 140);
   myPID1.SetMode(AUTOMATIC);
-  myPID1.SetOutputLimits(-10, 10);
+  myPID1.SetOutputLimits(10, 76);
   // TIME SAMPLE
   myPID1.SetSampleTime(Ts);
   myPID.SetSampleTime(Ts);
@@ -147,7 +147,7 @@ void loop()
   {
     int oldx = x, oldy = y;
     getxy();
-    // if ((x != oldx) || (y != oldy)) //ball is on plate
+    if ((x != oldx) || (y != oldy)) //ball is on plate
     {
       servo1.attach(5); //connect servos
       servo2.attach(6);
@@ -176,8 +176,8 @@ void loop()
       if (noTouchCount == 75)
       {
         noTouchCount++;
-        Output = 90; //make plate flat
-        Output = 9;
+        Output = 60; //make plate flat
+        Output1 = 4;
         servo1.write(Output);
         servo2.write(Output1);
       }
