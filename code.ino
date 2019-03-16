@@ -2,37 +2,39 @@
 #include <PID_v1.h>
 #include <stdint.h>
 #include "TouchScreen.h"
-#include <SPI.h>
+//#include <SPI.h>
 #include <Wire.h>
-#include <wiinunchuk.h>
+//#include <wiinunchuk.h>
 #include <Servo.h>
 
+#define MODE 1;
+
 // Definitions TOUCH PINS
-#define YP A0 //0
+/* #define YP A0 //0
 #define XM A1 //1
 #define YM 3  //3
 #define XP 4  //4
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 int buttonPushCounter = 1; // counter for the number of button presses
-int lastButtonState = 0;   // previous state of the button
-int flag, flagZ;
+int lastButtonState = 0;   // previous state of the button */
+// int flag, flagZ;
 
-float xVal, yVal;
-int cCount = 0;
-int flagC = 0;
-int flagK = 0;
-float kk = 0;
-int fl = 0;
-double l = 0.00;
-unsigned int noTouchCount = 0; //viariable for noTouch
+float x, y;
+// int cCount = 0;
+// int flagC = 0;
+// int flagK = 0;
+// float kk = 0;
+// int fl = 0;
+// double l = 0.00;
+// unsigned int noTouchCount = 0; //viariable for noTouch
 double k = 0;
 
 // PID values
 double Setpoint, Input, Output;    //for X
 double Setpoint1, Input1, Output1; //for Y
 
-int Modulo;
-long lastcas = 0;
+// int Modulo;
+// long lastcas = 0;
 
 // servos variables
 Servo servo1; //X axis
@@ -56,7 +58,7 @@ float Kd = 0.13;
 float Kp1 = 0.3;
 float Ki1 = 0.08;
 float Kd1 = 0.13;
-long cas = 0;
+// long cas = 0;
 
 //INIT PID
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
@@ -66,76 +68,76 @@ void setup()
 {
     servo1.attach(5);
     servo2.attach(6);
-    Output = 95;
-    Output1 = 95;
+    Output = 90;
+    Output1 = 0;
     servo1.write(Output);
     servo2.write(Output1);
 
-    //init NUN
+    /*   //init NUN
     nunchuk_setpowerpins();
     nunchuk_init();
-    nunchuk_get_data();
+    nunchuk_get_data(); */
 
     //INIT PINS
-    pinMode(9, OUTPUT);
+    /*     pinMode(9, OUTPUT);
     pinMode(8, OUTPUT);
     digitalWrite(9, LOW); //LED INIT
-    digitalWrite(8, LOW);
+    digitalWrite(8, LOW); */
 
     Serial.begin(115200);
 
     //INIT OF TOUSCHSCREEN
-    TSPoint p = ts.getPoint();
+    TSPoint p = ts.getPoint(); //Find alternative
     Input = 120;
     Input1 = 65;
     //INIT SETPOINT
     Setpoint = 120;
     Setpoint1 = 65;
     //// Make plate flat
-    servo1.attach(5);
+    /*  servo1.attach(5);
     servo2.attach(6);
     Output = 95;
     Output1 = 95;
     servo1.write(Output);
-    servo2.write(Output1);
+    servo2.write(Output1); */
 
     //Zapnutie PID
     myPID.SetMode(AUTOMATIC);
-    myPID.SetOutputLimits(20, 160);
+    myPID.SetOutputLimits(45, 135);
     myPID1.SetMode(AUTOMATIC);
-    myPID1.SetOutputLimits(20, 160);
+    myPID1.SetOutputLimits(-45, 45);
     // TIME SAMPLE
     myPID1.SetSampleTime(Ts);
     myPID.SetSampleTime(Ts);
-    
+
     delay(100);
-  
 }
 
 void loop()
 {
     while (Stable < 125) //REGULATION LOOP
     {
-        TSPoint p = ts.getPoint();       //measure pressure on plate
-        if (p.z > ts.pressureThreshhold) //ball is on plate
+        int oldx = x, oldy = y;
+        TSPoint p = ts.getPoint();      //measure pressure on plate
+        if ((x != oldx) || (y != oldy)) //ball is on plate
         {
             servo1.attach(5); //connect servos
             servo2.attach(6);
             setDesiredPosition();
             noTouchCount = 0;
             TSPoint p = ts.getPoint(); // measure actual position
-            Input = (p.x * convertX);  // read and convert X coordinate
-            Input1 = (p.y * convertY); // read and convert Y coordinate
+            Input = (x * convertX);    // read and convert X coordinate
+            Input1 = (y * convertY);   // read and convert Y coordinate
 
             if ((Input > Setpoint - 2 && Input < Setpoint + 2 && Input1 > Setpoint1 - 2 && Input1 < Setpoint1 + 2)) //if ball is close to setpoint
             {
                 Stable = Stable + 1; //increment STABLE
-                digitalWrite(9, HIGH);
+                // digitalWrite(9, HIGH);
             }
-            else
+            /* else
             {
                 digitalWrite(9, LOW);
-            }
+            } */
             myPID.Compute();  //action control X compute
             myPID1.Compute(); //   action control  Y compute
         }
@@ -146,16 +148,16 @@ void loop()
             if (noTouchCount == 75)
             {
                 noTouchCount++;
-                Output = 95; //make plate flat
-                Output = 93;
+                Output = 90; //make plate flat
+                Output = 0;
                 servo1.write(Output);
                 servo2.write(Output1);
             }
-            if (noTouchCount == 150) //if there is no ball on plate longer
+            /* if (noTouchCount == 150) //if there is no ball on plate longer
             {
                 servo1.detach(); //detach servos
                 servo2.detach();
-            }
+            } */
         }
         servo1.write(Output);  //control
         servo2.write(Output1); //control
@@ -172,18 +174,18 @@ void loop()
     servo1.detach(); //detach servos
     servo2.detach();
 
-    ///KONTROLA STABILITY////
+    ///control STABILITY////
     while (Stable == 125) //if is stable
     {                     //still measure actual postiion
         setDesiredPosition();
-        TSPoint p = ts.getPoint();
-        Input = (p.x * convertX);                                                                             //read X
-        Input1 = (p.y * convertY);                                                                            //read Y
+        TSPoint p = ts.getPoint();                                                                            //alternative
+        Input = (x * convertX);                                                                               //read X
+        Input1 = (y * convertY);                                                                              //read Y
         if (Input < Setpoint - 2 || Input > Setpoint + 2 || Input1 > Setpoint1 + 2 || Input1 < Setpoint1 - 2) //if ball isnt close to setpoint
         {
             servo1.attach(5); //again attach servos
             servo2.attach(6);
-            digitalWrite(9, LOW);
+            // digitalWrite(9, LOW);
             Stable = 0; //change STABLE state
         }
 
@@ -195,10 +197,10 @@ void loop()
 void setDesiredPosition()
 {
 
-    nunchuk_get_data();
+    // nunchuk_get_data();
     //if zbutton is pressed, zero positions
 
-    int c = nunchuk_zbutton();
+    /* int c = nunchuk_zbutton();
     if (c != lastButtonState)
     {
         // if the state has changed, increment the counter
@@ -209,9 +211,9 @@ void setDesiredPosition()
             buttonPushCounter++;
         }
     }
-    lastButtonState = c;
+    lastButtonState = c; */
 
-    switch (buttonPushCounter)
+    /* switch (buttonPushCounter)
     {
     case 1:
         Setpoint = 120;
@@ -234,30 +236,29 @@ void setDesiredPosition()
         buttonPushCounter = 0;
         fl = 4;
         break;
-    }
-    if (nunchuk_cbutton() && fl == 1) ///LEMNISCATE TRAJECOTRY
+    } */
+
+    switch (MODE)
     {
+    case 1:
         Setpoint = 85 + (50 * cos(k)) / (1 + sin(k) * sin(k));
         Setpoint1 = 55 + (50 * sin(k) * cos(k)) / (1 + sin(k) * sin(k));
         buttonPushCounter = 0;
         k = k + 0.008;
-    }
-    if (nunchuk_cbutton() && fl == 2) // CIRCLE TRAJECTORY
-    {
+        break;
+    case 2:
         Setpoint = 85 + 25 * cos(k);
         Setpoint1 = 55 + 25 * sin(k);
         buttonPushCounter = 0;
         k = k - 0.02;
-    }
-    if (nunchuk_cbutton() && fl == 3) /// ELLIPSE TRAJECORY
-    {
+        break;
+    case 3:
         Setpoint = 85 + 40 * cos(k);
         Setpoint1 = 55 + 25 * sin(k);
         buttonPushCounter = 0;
         k = k - 0.02;
-    }
-    if (nunchuk_cbutton() && fl == 4) //PENTAGRAM TRAJECOTRY
-    {
+        break;
+    case 4:
         Setpoint = 85 + 18 * cos(k) + 12 * cos(k * 150);  //
         Setpoint1 = 55 + 18 * sin(k) - 12 * sin(k * 150); //
         buttonPushCounter = 0;
