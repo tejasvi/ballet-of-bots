@@ -48,8 +48,7 @@ void getxy()
   }
 }
 // int cCount = 0;
-// int flagC = 0;
-// int flagK = 0;
+// int \ int flagK = 0;
 // float kk = 0;
 // int fl = 0;
 // double l = 0.00;
@@ -88,7 +87,7 @@ float Kd1 = 0.13;
 // long cas = 0;
 
 //INIT PID
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, REVER);
 PID myPID1(&Input1, &Output1, &Setpoint1, Kp1, Ki1, Kd1, DIRECT);
 
 void setup()
@@ -116,11 +115,11 @@ void setup()
 
   //INIT OF TOUSCHSCREEN
   getxy();
-  Input = 10;
-  Input1 = 3;
+  Input = 120;//10
+  Input1 = 65;//3
   //INIT SETPOINT
-  Setpoint = 7.7;
-  Setpoint1 = 4.3;
+  Setpoint = 120;//7.7
+  Setpoint1 = 65;//4.3
   //// Make plate flat
   /*  servo1.attach(5);
     servo2.attach(6);
@@ -131,9 +130,9 @@ void setup()
 
   //Zapnutie PID
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(10, 140);
+  myPID.SetOutputLimits(20, 160);//10.140
   myPID1.SetMode(AUTOMATIC);
-  myPID1.SetOutputLimits(10, 76);
+  myPID1.SetOutputLimits(20, 160);//10,76
   // TIME SAMPLE
   myPID1.SetSampleTime(Ts);
   myPID.SetSampleTime(Ts);
@@ -269,8 +268,8 @@ void setDesiredPosition()
   switch (MODE)
   {
     case 0:
-      Setpoint = 7.7;
-      Setpoint1 = 4.3;
+      Setpoint = 120;//
+      Setpoint1 = 70;//
       break;
     case 1:
       Setpoint = 85 + (50 * cos(k)) / (1 + sin(k) * sin(k));
