@@ -195,7 +195,8 @@ void loop()
       Input1 = (y * convertY); // read and convert Y coordinate
 
       //Quantifying ball stability from coordinate variations
-      if ((Input > Setpoint - 2 && Input < Setpoint + 2 && Input1 > Setpoint1 - 2 && Input1 < Setpoint1 + 2)) //if ball is close to setpoint
+      if ((Input > Setpoint - 2 && Input < Setpoint + 2 && Input1 > Setpoint1 -\
+      2 && Input1 < Setpoint1 + 2)) //if ball is close to setpoint
       {
         Stable = Stable + 1; //increment STABLE
       }
@@ -240,8 +241,8 @@ void loop()
     //still measure actual postiion
     setDesiredPosition();
     getxy();
-    Input = (x * convertX);                                                                               //read X
-    Input1 = (y * convertY);                                                                              //read Y
+    Input = (x * convertX); //read X
+    Input1 = (y * convertY); //read Y
     if (Input < Setpoint - 2 || Input > Setpoint + 2 || Input1 > (Setpoint1 + 2)/
     || Input1 < Setpoint1 - 2) //if ball isnt close to setpoint
     {
